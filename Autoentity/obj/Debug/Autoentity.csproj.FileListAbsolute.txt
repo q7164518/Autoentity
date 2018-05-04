@@ -1,0 +1,13 @@
+E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.exe
+E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.pdb
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csprojResolveAssemblyReference.cache
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.Main.resources
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.Properties.Resources.resources
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csproj.GenerateResource.cache
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csproj.CoreCompileInputs.cache
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.exe
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.pdb
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.SQLServerLink.resources
+E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.exe.config
+E:\CSharp\Autoentity\Autoentity\bin\Debug\icsharpcode.texteditor.dll
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csproj.CopyComplete
