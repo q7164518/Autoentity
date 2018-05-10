@@ -1,6 +1,5 @@
 E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.exe
 E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.pdb
-E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csprojResolveAssemblyReference.cache
 E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.Main.resources
 E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.Properties.Resources.resources
 E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csproj.GenerateResource.cache
@@ -11,3 +10,8 @@ E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.SQLServerLink.resources
 E:\CSharp\Autoentity\Autoentity\bin\Debug\Autoentity.exe.config
 E:\CSharp\Autoentity\Autoentity\bin\Debug\icsharpcode.texteditor.dll
 E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csproj.CopyComplete
+E:\CSharp\Autoentity\Autoentity\bin\Debug\Google.Protobuf.dll
+E:\CSharp\Autoentity\Autoentity\bin\Debug\MySql.Data.dll
+E:\CSharp\Autoentity\Autoentity\bin\Debug\Google.Protobuf.xml
+E:\CSharp\Autoentity\Autoentity\bin\Debug\MySql.Data.xml
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.MySQLLink.resources

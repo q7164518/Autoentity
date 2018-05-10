@@ -26,6 +26,11 @@
         public string Password { get; set; }
 
         /// <summary>
+        /// MySQL端口号
+        /// </summary>
+        public ushort Port { get; set; }
+
+        /// <summary>
         /// 主机地址
         /// </summary>
         public string Host { get; set; }

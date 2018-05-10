@@ -169,6 +169,10 @@ namespace Autoentity
             }
         }
 
+        /// <summary>
+        /// 加载所有表
+        /// </summary>
+        /// <param name="node"></param>
         private void LoadingTables(TreeNode node)
         {
             var type = (DataBaseType)node.Tag;
@@ -204,9 +208,36 @@ on
                             };
                             node.Nodes.Add(nodeItem);
                         }
+                        dt.Rows.Clear();
+                        dt.Clear();
+                        dt.Dispose();
+                        dt = null;
+                        GC.Collect();
                     }
                     break;
                 case DataBaseType.MySQL:
+                    var database = node.Name.Substring(node.Name.IndexOf("Database=") + 9, node.Name.IndexOf(";port=") - node.Name.IndexOf("Database=") - 9);
+                    var sql1 = $"SELECT TABLE_NAME as 表名, Table_Comment as 表说明 FROM INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = '{database}'";
+                    var dt1 = MySQLHelper.QueryDataTable(node.Name, sql1);
+                    if (dt1?.Rows.Count > 0)
+                    {
+                        node.Nodes.Clear();
+                        foreach (DataRow item in dt1.Rows)
+                        {
+                            var nodeItem = new TreeNode
+                            {
+                                Text = item["表名"].ToString(),
+                                Name = item["表说明"].ToString(),
+                                Tag = type
+                            };
+                            node.Nodes.Add(nodeItem);
+                        }
+                        dt1.Rows.Clear();
+                        dt1.Clear();
+                        dt1.Dispose();
+                        dt1 = null;
+                        GC.Collect();
+                    }
                     break;
                 case DataBaseType.Oracler:
                     break;
@@ -226,6 +257,7 @@ on
             switch (type)
             {
                 case DataBaseType.SQLServer:
+                    #region SQL Server生成实体类代码
                     codeString.Append($@"using SqlSugar;{(string.IsNullOrWhiteSpace(this.Using_TextBox.Text) ? "" : $"{Environment.NewLine}{this.Using_TextBox.Text.Trim()}")}
 
 namespace {this.Namespace_TextBox.Text.Trim()}
@@ -416,8 +448,200 @@ namespace {this.Namespace_TextBox.Text.Trim()}
                     }
                     codeString.Append(@"    }
 }");
+                    #endregion
                     break;
                 case DataBaseType.MySQL:
+                    var database = node.Parent.Name.Substring(node.Parent.Name.IndexOf("Database=") + 9, node.Parent.Name.IndexOf(";port=") - node.Parent.Name.IndexOf("Database=") - 9);
+                    codeString.Append($@"using SqlSugar;{(string.IsNullOrWhiteSpace(this.Using_TextBox.Text) ? "" : $"{Environment.NewLine}{this.Using_TextBox.Text.Trim()}")}
+
+namespace {this.Namespace_TextBox.Text.Trim()}
+{{
+    /// <summary>
+    /// {node.Name}
+    /// </summary>{(string.IsNullOrWhiteSpace(this.CusAttr_TextBox.Text) ? "" : $"{Environment.NewLine}    {this.CusAttr_TextBox.Text.Trim()}")}
+    public class {(this.TableCapsCount_NumericUpDown.Value > 0 ? node.Text.SetLengthToUpperByStart((int)this.TableCapsCount_NumericUpDown.Value) : node.Text)}{(string.IsNullOrWhiteSpace(this.BaseClass_TextBox.Text) ? "" : $" : {this.BaseClass_TextBox.Text.Trim()}")}
+    {{");
+                    var mysql_tableInfo = MySQLHelper.QueryTableInfo(node.Parent.Name, $"select * from {node.Text} where 1=2");
+                    DataTable mysql_colsInfos = MySQLHelper.QueryDataTable(node.Parent.Name, $"select COLUMN_NAME as OBJNAME,column_comment as VALUE from INFORMATION_SCHEMA.Columns where table_name='{node.Text}' and table_schema='{database}'", null);
+                    var mysql_getString = this.GetCus_TextBox.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(mysql_getString))
+                    {
+                        mysql_getString = "return this._-colName-;";
+                    }
+                    else
+                    {
+                        mysql_getString = mysql_getString.Replace("属性", "-colName-");
+                    }
+                    var mysql_setString = this.SetCus_TextBox.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(mysql_setString))
+                    {
+                        mysql_setString = "this._-colName- = -value-;";
+                    }
+                    else
+                    {
+                        mysql_setString = mysql_setString.Replace("属性", "-colName-");
+                    }
+                    foreach (DataRow dr in mysql_tableInfo.Rows)
+                    {
+                        var zhuShi = string.Empty;//列名注释
+                        foreach (DataRow uu in mysql_colsInfos.Rows)
+                        {
+                            if (uu["OBJNAME"].ToString().ToUpper() == dr["ColumnName"].ToString().ToUpper())
+                                zhuShi = uu["VALUE"].ToString();
+                        }
+                        if ((bool)dr["IsKey"] && !(bool)dr["IsAutoIncrement"])
+                        {
+                            if (this.SqlSugarPK_CheckBox.Checked && this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsPrimaryKey = true, IsIdentity = false)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else if (this.SqlSugarPK_CheckBox.Checked && !this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsPrimaryKey = true)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                        }
+                        else if ((bool)dr["IsKey"] && (bool)dr["IsAutoIncrement"])
+                        {
+                            if (this.SqlSugarPK_CheckBox.Checked && this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else if (this.SqlSugarPK_CheckBox.Checked && !this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsPrimaryKey = true)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else if (!this.SqlSugarPK_CheckBox.Checked && this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsIdentity = true)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                        }
+                        else if (!(bool)dr["IsKey"] && (bool)dr["IsAutoIncrement"])
+                        {
+                            if (this.SqlSugarBZL_CheckBox.Checked)
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        [SugarColumn(IsIdentity = true)]
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                            else
+                            {
+                                codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                            }
+                        }
+                        else
+                        {
+                            codeString.Append($@"
+        private -dbType- _-colName-;
+        /// <summary>
+        /// -zhuShi-
+        /// </summary>
+        public -dbType- -colName- {{ get {{ {mysql_getString} }} set {{ {mysql_setString} }} }}
+");
+                        }
+                        Type ttttt = this.GetTypeByString(dr["DataType"].ToString());
+                        if (ttttt.IsValueType && dr["AllowDBNull"].ToString() == "True")
+                        {
+                            codeString.Replace("-dbType-", dr["DataType"].ToString() + "?");  //替换数据类型
+                            if (this.PropDefault_CheckBox.Checked)
+                            {
+                                codeString.Replace("-value-", $"value ?? default({dr["DataType"].ToString()})");
+                            }
+                            else
+                            {
+                                codeString.Replace("-value-", "value");
+                            }
+                        }
+                        else
+                        {
+                            if (dr["DataType"].ToString() == "System.String")
+                            {
+                                codeString.Replace("-dbType-", dr["DataType"].ToString());  //替换数据类型
+                                if (this.PropTrim_CheckBox.Checked)
+                                {
+                                    codeString.Replace("-value-", "value?.Trim()");
+                                }
+                                else
+                                {
+                                    codeString.Replace("-value-", "value");
+                                }
+                            }
+                            else
+                            {
+                                codeString.Replace("-dbType-", dr["DataType"].ToString());  //替换数据类型
+                                codeString.Replace("-value-", "value");
+                            }
+                        }
+                        codeString.Replace("-colName-", this.PropCapsCount_NumericUpDown.Value > 0 ? dr["ColumnName"].ToString().SetLengthToUpperByStart((int)this.PropCapsCount_NumericUpDown.Value) : dr["ColumnName"].ToString());  //替换列名（属性名）
+                        codeString.Replace("-zhuShi-", zhuShi);
+                    }
+                    codeString.Append(@"    }
+}");
                     break;
                 case DataBaseType.Oracler:
                     break;
@@ -621,6 +845,20 @@ namespace {this.Namespace_TextBox.Text.Trim()}
                 }
                 this.LinkInfo_TreeView.Nodes.Remove(selectNode);
             }
+        }
+        
+        private void MySQLToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var sqlServerModel = new MySQLLink(linkInfo =>
+            {
+                this.LinkInfo_TreeView.Nodes.Add(new TreeNode
+                {
+                    Name = linkInfo.LinkString,
+                    Text = linkInfo.LinkName,
+                    Tag = linkInfo.Type
+                });
+                this._MainInfoModel.LinkList.Add(linkInfo);
+            }).ShowDialog();
         }
     }
 }
