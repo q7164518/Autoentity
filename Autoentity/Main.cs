@@ -189,7 +189,7 @@ inner join
     sysobjects d 
 on 
     a.id=d.id  and d.xtype='U' and  d.name<>'dtproperties'
-inner join
+left join
 sys.extended_properties f
 on 
     d.id=f.major_id and f.minor_id=0) t

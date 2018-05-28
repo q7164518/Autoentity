@@ -15,3 +15,4 @@ E:\CSharp\Autoentity\Autoentity\bin\Debug\MySql.Data.dll
 E:\CSharp\Autoentity\Autoentity\bin\Debug\Google.Protobuf.xml
 E:\CSharp\Autoentity\Autoentity\bin\Debug\MySql.Data.xml
 E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.MySQLLink.resources
+E:\CSharp\Autoentity\Autoentity\obj\Debug\Autoentity.csprojAssemblyReference.cache
